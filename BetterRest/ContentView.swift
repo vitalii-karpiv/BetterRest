@@ -26,37 +26,47 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                VStack(alignment: .leading, spacing: 15) {
-                    Text("When do you want you wake up?")
-                        .font(.headline)
-                    DatePicker("Please, enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                        .labelsHidden()
+            VStack {
+                Form {
+                    Section {
+                        DatePicker("Please, enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+                            .onChange(of: wakeUp) { newValue in
+                                calculateBedTime()
+                            }
+                    } header: {
+                        Text("When do you want you wake up?")
+                            .font(.headline)
+                    }
+                    
+                    Section {
+                        Stepper("\(sleepAmout.formatted()) hours", value: $sleepAmout, in: 4...12, step: 0.25)
+                            .onChange(of: sleepAmout) { newValue in
+                                calculateBedTime()
+                            }
+                    } header: {
+                        Text("Desired amount of sleep")
+                            .font(.headline)
+                    }
+                    
+                    Section {
+                        Picker(coffeAmount == 1 ? "1 cup" : "\(coffeAmount) cups", selection: $coffeAmount) {
+                            ForEach(1...20, id: \.self) {Text($0 == 1 ? "1 cup" : "\($0) cups")}
+                        }
+                    } header: {
+                        Text("Daily coffe intake")
+                            .font(.headline)
+                    }
                 }
-                
-                VStack(alignment: .leading, spacing: 15) {
-                    Text("Desired amount of sleep")
-                        .font(.headline)
-                    Stepper("\(sleepAmout.formatted()) hours", value: $sleepAmout, in: 4...12, step: 0.25)
-                }
-                
-                VStack(alignment: .leading, spacing: 15) {
-                    Text("Daily coffe intake")
-                        .font(.headline)
-                    Stepper(coffeAmount == 1 ? "1 cup" : "\(coffeAmount) cups", value: $coffeAmount, in: 1...20)
-                }
+                Text(alertTitle)
+                    .font(.largeTitle)
+                Text(alertMessage)
+                    .font(.largeTitle)
+                Spacer()
+                Spacer()
             }
             .navigationTitle("BetterRest")
-            .toolbar {
-                Button("Calculate") {
-                    calculateBedTime()
-                }
-            }
-            .alert(alertTitle, isPresented: $showingAlert) {
-                Button("OK") {}
-            } message: {
-                Text(alertMessage)
-            }
+            .onAppear(perform: calculateBedTime)
         }
     }
     
